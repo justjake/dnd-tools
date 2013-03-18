@@ -38,11 +38,11 @@ module Pathfinder
         # Roll one dice with N sides.
         # When rolling 20-sided dice, alerts on very high or low rolls.
         #
-        # @param sides [Integer] number of sides on the dice
+        # @param sides [Integer] number of sides on the dice.
         # @param crit_level [Integer] alert the user to dice 
-        #   rolls at or above this level when rolling 20-sided dice
+        #   rolls at or above this level when rolling 20-sided dice. Default 19.
         # @param failure_level [integer] alert the user to dice rolls
-        #   at or below this level when rolling 20-sided dice
+        #   at or below this level when rolling 20-sided dice. Default 1.
         # @return [Integer] result of the dice roll
         def single_roll(sides, crit_level = 19, failure_level = 1)
             res = 1 + rand(sides)
@@ -59,16 +59,16 @@ module Pathfinder
 
 
         # Roll a number of dice
-        # @param dice [Integer] number of dice to roll
-        # @param sides [Integer] number of sides on each die
+        # @param dice [Integer] number of dice to roll. Default 1.
+        # @param sides [Integer] number of sides on each die. Default 6.
         # @see #single_roll
-        # @return [Array] list of dice roll results
+        # @return [Array<Integer>] list of dice roll results
         def roll(dice = 1, sides = 6, crit_level = 19, failure_level = 1)
             (1..dice).to_a.map{ |_| single_roll(sides, crit_level, failure_level) }
         end
 
         # Roll a 20-sided dice and add an optional skill bonus
-        # @param skill [Integer] your skill-check or saving-throw bonus
+        # @param skill [Integer] your skill-check or saving-throw bonus. Default 0.
         # @return [Integer]
         def check(skill = 0)
             sum(roll(1, 20)) + skill
