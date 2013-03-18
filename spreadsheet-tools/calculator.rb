@@ -8,11 +8,9 @@ require "pry"    # my fav console evar
 # Our Google OAuth widget
 require File.join(File.dirname(__FILE__), 'connect_to_drive.rb')
 
-STORE = File.join(File.dirname(__FILE__), 'pathfinder.pstore')
-
 module Pathfinder
-    
-    STORAGE = PStore.new(STORE)
+
+    STORAGE = PStore.new(File.join(File.dirname(__FILE__), 'pathfinder.pstore'))
 
     module Tools
         # This is where all the in-game functions are defined
@@ -167,8 +165,10 @@ end
 include Pathfinder::Tools
 
 # OAuth flow
+puts "Prepare your body for synchronous HTTPS requests!"
 state = Pathfinder::StateManager.new
 character = state.get_character_sheet
 
 # Boom, UI.
+# try out `character.skills` !!!!1
 binding.pry

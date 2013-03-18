@@ -4,27 +4,27 @@ require "bundler/setup"
 require "oauth2"
 require "pstore" # used over YAML for novelty.
 
-STORE = File.join(File.dirname(__FILE__), 'oauth.pstore')
-
-#CLIENT_ID = ENV['CLIENT_ID']
-#CLIENT_SECRET = ENV['CLIENT_SECRET']
-
-# TODO: move into ENV
-CLIENT_ID =     '539096868219.apps.googleusercontent.com'
-CLIENT_SECRET = 'HSJKoPRwscFvYvkP-6HhmEaH'
-
-# this tells Google what permissions we are requesting
-#SCOPE = 'https://www.googleapis.com/auth/drive.file'
-SCOPE = 'https://www.googleapis.com/auth/drive.readonly'
-# SCOPE = 'https://www.googleapis.com/auth/drive'
-SCOPE = "https://docs.google.com/feeds/ " +
-        "https://docs.googleusercontent.com/ " +
-        "https://spreadsheets.google.com/feeds/"
-
-REDIRECT_URI = 'http://localhost' # see the Google API console
 
 module Pathfinder
     class OAuth
+
+        STORE = File.join(File.dirname(__FILE__), 'oauth.pstore')
+
+        # TODO: move into ENV
+        #CLIENT_ID = ENV['CLIENT_ID']
+        #CLIENT_SECRET = ENV['CLIENT_SECRET']
+
+        CLIENT_ID =     '539096868219.apps.googleusercontent.com'
+        CLIENT_SECRET = 'HSJKoPRwscFvYvkP-6HhmEaH'
+
+        # this tells Google what permissions we are requesting
+        # I'd prefer to use ReadOnly, but I don't want to rewrite this gem
+        # SCOPE = 'https://www.googleapis.com/auth/drive.readonly'
+        SCOPE = "https://docs.google.com/feeds/ " +
+                "https://docs.googleusercontent.com/ " +
+                "https://spreadsheets.google.com/feeds/"
+
+        REDIRECT_URI = 'http://localhost' # see the Google API console
 
         attr_reader :access_token
 
