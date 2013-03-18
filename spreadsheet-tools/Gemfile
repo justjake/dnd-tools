@@ -1,0 +1,4 @@
+source :rubygems
+gem "oauth2"
+gem "google_drive"
+gem "pry"
