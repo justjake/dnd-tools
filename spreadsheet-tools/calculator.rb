@@ -39,7 +39,7 @@ module Pathfinder
 
         def roll(dice = 1, sides = 6, crit_level = 19)
             """roll a number of dice with a number of sides"""
-            (dice..dice).to_a.map{ |_| single_roll(sides, crit_level) }
+            (1..dice).to_a.map{ |_| single_roll(sides, crit_level) }
         end
 
         def check(skill = 0)
@@ -108,7 +108,7 @@ module Pathfinder
                 # more clear to split this up
                 skill_name = @stats[row, names_col]
                 skill_val  = @stats[row, skills_col]
-                skills[skill_name] = skill_val
+                skills[skill_name] = skill_val.to_i
             end
 
             skills
@@ -118,46 +118,57 @@ module Pathfinder
     class StateManager
 
         # for ease of use
-        attr_accessor :token, :key, :session, :auth
+        attr_accessor :token, :session, :auth
+        attr_reader   :doc_id
 
         def initialize(storage = Pathfinder::STORAGE)
             @storage = storage
+            @auth = Pathfinder::OAuth.new(@storage)
+            @token = @auth.load_token
+
+            @storage.transaction do
+                @doc_id = @storage[:doc]
+            end
         end
 
-        def set_doc_key(key)
-            @key = key
+        def authorize
+            @auth.authorize
+            @auth.save_token
+            @token = @auth.access_token
+        end
+
+        def doc_id=(k)
+            @doc_id = k
             @storage.transaction do
-                @storage[:doc] = @key
+                @storage[:doc] = @doc_id
             end
         end
 
         def get_character_sheet
-            if @key.nil?
-                @storage.transaction do 
-                    @key = @storage[:doc]
-                end
-            end
-
-            if @key.nil?
-                raise 'No key stored. See StateManager#set_doc_key'
-            end
-
-            @auth = Pathfinder::OAuth.new
-            @token = auth.load_token
-
             if @token.nil?
-                raise 'No OAuth credentials stored'
+                self.authorize()
             end
+
+            if @doc_id.nil?
+                puts "\n\nPaste the `key=` parameter from your character's Google Drive URL here:"
+                self.doc_id = gets.chomp
+            end
+
 
             @session = GoogleDrive.login_with_oauth(@token)
-            return Pathfinder::CharacterSheet.new(@session, @key)
+            return Pathfinder::CharacterSheet.new(@session, @doc_id)
         end
     end
 
 
 end
 
+# Cool, here's our DnD functions
+include Pathfinder::Tools
 
-include Pathfinder
+# OAuth flow
+state = Pathfinder::StateManager.new
+character = state.get_character_sheet
+
 # Boom, UI.
 binding.pry

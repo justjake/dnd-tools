@@ -41,7 +41,7 @@ module Pathfinder
 
         def authorize()
             # Step 1
-            puts "Paste this URL into your browser to connect this app with Google: "
+            puts "\n\nOpen this URL into your browser to connect this app with Google: "
             puts @client.auth_code.authorize_url(
                 :scope => SCOPE, 
                 :access_type => 'offline', 
@@ -52,7 +52,7 @@ module Pathfinder
             # Step 2 is performed in the browser by the user
 
             # Step 3
-            puts "Paste the `code` parameter from the redirect URL here to finish authorization: "
+            puts "\n\nPaste the `code` parameter from the redirect URL here to finish authorization: "
             code = gets.chomp
 
             @access_token = @client.auth_code.get_token(code, {
