@@ -89,7 +89,7 @@ module Pathfinder
             end
 
             @access_token = OAuth2::AccessToken.new(@client, token, :refresh_token => refresh)
-            @access_token.refresh!
+            # @access_token.refresh!
             @access_token
         end
     end
