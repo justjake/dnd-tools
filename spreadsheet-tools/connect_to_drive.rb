@@ -24,7 +24,8 @@ module Pathfinder
                 "https://docs.googleusercontent.com/ " +
                 "https://spreadsheets.google.com/feeds/"
 
-        REDIRECT_URI = 'http://localhost' # see the Google API console
+        # REDIRECT_URI = 'http://localhost' # see the Google API console
+        REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
         attr_reader :access_token
 
@@ -68,8 +69,7 @@ module Pathfinder
 
             # wow look at the saftey!
             @storage.transaction do
-                @storage[:token] = @access_token.token
-                @storage[:refresh_token] = @access_token.refresh_token
+                @storage[:refesh_token] = @access_token.refresh_token
             end
 
         end
@@ -79,8 +79,7 @@ module Pathfinder
             refresh = nil
 
             @storage.transaction do
-                token = @storage[:token]
-                refresh = @storage[:refresh_token]
+                refresh = @storage[:refesh_token]
             end
 
             if token.nil? or refresh.nil?
@@ -88,8 +87,8 @@ module Pathfinder
                 return nil
             end
 
-            @access_token = OAuth2::AccessToken.new(@client, token, :refresh_token => refresh)
-            # @access_token.refresh!
+            # fuck this
+            @access_token = OAuth2::AccessToken.from_hash(@client, :refresh_token => refresh).refresh!
             @access_token
         end
     end
