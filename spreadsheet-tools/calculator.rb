@@ -13,6 +13,13 @@ require "pry"    # my fav console evar
 # Our Google OAuth widget
 require File.join(File.dirname(__FILE__), 'connect_to_drive.rb')
 
+class Fixnum
+    # In-line modifier scores
+    def modifier
+        ((self - 10) / 2).to_i
+    end
+end
+
 module Pathfinder
 
     STORAGE = PStore.new(File.join(File.dirname(__FILE__), 'pathfinder.pstore'))
@@ -77,7 +84,7 @@ module Pathfinder
         # roll to hit
         # Rolls a basic check with an additional bonus
         # @param bonus [Integer] added bonus, usually from Anne's blung-ing or haste
-        # @param base [Integer] your usual attack bonus. Character-specific
+        # @param base [Integer] your usual attack bonus. Character-specific default 14.
         # @see #check
         def atk_roll(bonus = 0, base = 14)
             check(base) + bonus
@@ -85,6 +92,7 @@ module Pathfinder
 
         # roll for damage
         # Character-specific to Shalizara
+        # @return [Array<Integer>] magic and normal components of the attack
         def normal_damage(magic_damage_dice = 2)
             magic = sum(roll(magic_damage_dice, 6)) + 2
             dagger = sum(roll(1, 4)) + 2
@@ -107,12 +115,13 @@ module Pathfinder
     # The character-sheet provides one-word lookup of almost all essential 
     # character statistics.
     #
-    # On a technical level, a CharacterSheet wraps access to a GoogleDrive::Worksheet
-    # with friendly helper methods. Skill accessor methods are dynamically added at object 
-    # instantiation.
+    # On a technical level, a CharacterSheet wraps access to a 
+    # GoogleDrive::Worksheet with friendly helper methods. Skill accessor
+    # methods are dynamically added at object instantiation.
     #
-    # CharacterSheet is currently the gameplay interface, so it includes Pathfinder::Tools
-    # for easy dice rolling, skill checks, and ninja business.
+    # CharacterSheet is currently the gameplay interface, so it includes
+    # Pathfinder::Tools for easy dice rolling, skill checks, and ninja 
+    # business.
     class CharacterSheet
 
         # include standard D&D tools
@@ -124,7 +133,7 @@ module Pathfinder
         attr_reader :doc, :stats
         attr_accessor :hp
 
-        # create a property reader for a spreadsheet coordinate
+        # reads a cell directly from the spreadsheet.
         def self.cell_reader(name, row_or_coord, col = nil, sheet_index = 0)
             define_method(name) do 
                 sheets = instance_variable_get('@sheets')
@@ -137,6 +146,12 @@ module Pathfinder
                 end
             end
         end
+
+        ###############################
+        # @!group Stats and Abilities
+        # access modifiers like `strength.modifier`
+
+        cell_reader :level,        'V5'
 
         # Ability stats
         cell_reader :strength,     'E14'
@@ -161,6 +176,10 @@ module Pathfinder
         cell_reader :bab,          'L46'
         cell_reader :cmb,          'E50'
         cell_reader :cmd,          'E52'
+
+        # @!endgroup
+        ################################
+        
 
         # session: a google_drive session
         # key: the Drive identifier for the character sheet document
@@ -274,17 +293,7 @@ module Pathfinder
 
             @session = GoogleDrive.login_with_oauth(@token)
 
-            begin
-                return Pathfinder::CharacterSheet.new(@session, @doc_id)
-            rescue Exception => error
-                puts "\n\nSomething went wrong with character sheet retrieval: #{error.to_s}"
-                puts "activating inspector..."
-                binding.pry
-
-                # retry in case of OAuth
-                @token = nil
-                get_character_sheet()
-            end
+            return Pathfinder::CharacterSheet.new(@session, @doc_id)
         end
     end
 
@@ -296,9 +305,22 @@ end
 state = Pathfinder::StateManager.new
 
 # Set up the env...
-character = state.get_character_sheet
+character = nil
+while character.nil?
+    begin
+        character = state.get_character_sheet
+    rescue GoogleDrive::AuthenticationError => error
+        puts "There was an error authenticating with Google Drive:\n"
+        puts error.to_s
+        puts "\n\nRe-linking with Google Drive..."
+        state.authorize
+    end
+end
 
 # Boom, UI.
+Pry.config.prompt = [ proc { 'd&d>> ' }, proc { '  |  ' } ]
+
+
 # all skills & most stats included
 puts '--- Pathfinder Character Tools 2: Revenge of Google Docs ---
  version 0.2 "Beware of OAuth"
