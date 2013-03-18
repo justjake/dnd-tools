@@ -82,7 +82,7 @@ module Pathfinder
                 refresh = @storage[:refesh_token]
             end
 
-            if token.nil? or refresh.nil?
+            if  refresh.nil?
                 puts 'Could not load OAuth token from storage'
                 return nil
             end
