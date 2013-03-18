@@ -1,3 +1,8 @@
+#!/usr/bin/env ruby
+
+# Run skill checks against the stats from your Google Drive character
+# sheet.
+
 require "rubygems"
 require "bundler/setup"
 
