@@ -17,11 +17,17 @@ CLIENT_SECRET = 'HSJKoPRwscFvYvkP-6HhmEaH'
 #SCOPE = 'https://www.googleapis.com/auth/drive.file'
 SCOPE = 'https://www.googleapis.com/auth/drive.readonly'
 # SCOPE = 'https://www.googleapis.com/auth/drive'
+SCOPE = "https://docs.google.com/feeds/ " +
+        "https://docs.googleusercontent.com/ " +
+        "https://spreadsheets.google.com/feeds/"
 
-REDIRECT_URI = 'https://localhost.com/OAUTH'
+REDIRECT_URI = 'http://localhost' # see the Google API console
 
 module Pathfinder
     class OAuth
+
+        attr_reader :access_token
+
         # Pass in a PSTORE or one will be created for you
         def initialize(storage = nil)
             @client = OAuth2::Client.new(CLIENT_ID, CLIENT_SECRET, {
@@ -47,7 +53,7 @@ module Pathfinder
 
             # Step 3
             puts "Paste the `code` parameter from the redirect URL here to finish authorization: "
-            code = gets.chomp.string
+            code = gets.chomp
 
             @access_token = @client.auth_code.get_token(code, {
                 :redirect_uri => REDIRECT_URI,
@@ -61,7 +67,7 @@ module Pathfinder
             end
 
             # wow look at the saftey!
-            @storage.transation do
+            @storage.transaction do
                 @storage[:token] = @access_token.token
                 @storage[:refresh_token] = @access_token.refresh_token
             end
@@ -78,7 +84,8 @@ module Pathfinder
             end
 
             if token.nil? or refresh.nil?
-                raise 'Could not load token from storage'
+                puts 'Could not load OAuth token from storage'
+                return nil
             end
 
             @access_token = OAuth2::AccessToken.new(@client, token, :refresh_token => refresh)

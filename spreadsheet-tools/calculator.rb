@@ -11,6 +11,9 @@ require File.join(File.dirname(__FILE__), 'connect_to_drive.rb')
 STORE = File.join(File.dirname(__FILE__), 'pathfinder.pstore')
 
 module Pathfinder
+    
+    STORAGE = PStore.new(STORE)
+
     module Tools
         # This is where all the in-game functions are defined
         # TODO load in character variables
@@ -74,8 +77,9 @@ module Pathfinder
         STATS_SHEET = 'Stats, Skills, Weapons'
 
         # for scraping the skills
-        SKILLS_CELL = 'AH16:AM16'
-        SKILLS_ROWS = 39
+        #SKILLS_CELL = 'AH16:AM16'
+        SKILLS_CELL = 'AH16'
+        SKILLS_ROWS = 38
 
         attr_reader :doc, :stats
 
@@ -84,27 +88,72 @@ module Pathfinder
 
             # all we need for now
             @stats = @doc.worksheet_by_title(STATS_SHEET)
+            @sheets = [@stats]
 
             if @stats.nil?
                 raise "Couldn't load the Stats charsheet"
             end
         end
 
-        def skills
+        def refresh
+            @sheets.each {|s| s.reload()}
+        end
+
+        def skills(start_loc = SKILLS_CELL, offset = 6)
             # scrape the spreadsheet skills list
             skills = {}
-            start, names_col = @stats.cell_name_to_row_col(SKILLS_CELL)
-            skills_col = names_col + 1
+            start, names_col = @stats.cell_name_to_row_col(start_loc)
+            skills_col = names_col + offset
             (start..start+SKILLS_ROWS).each do |row|
                 # more clear to split this up
                 skill_name = @stats[row, names_col]
                 skill_val  = @stats[row, skills_col]
-                skills[skill_name] = skill_val.to_i
+                skills[skill_name] = skill_val
             end
 
             skills
         end
     end
+
+    class StateManager
+
+        # for ease of use
+        attr_accessor :token, :key, :session, :auth
+
+        def initialize(storage = Pathfinder::STORAGE)
+            @storage = storage
+        end
+
+        def set_doc_key(key)
+            @key = key
+            @storage.transaction do
+                @storage[:doc] = @key
+            end
+        end
+
+        def get_character_sheet
+            if @key.nil?
+                @storage.transaction do 
+                    @key = @storage[:doc]
+                end
+            end
+
+            if @key.nil?
+                raise 'No key stored. See StateManager#set_doc_key'
+            end
+
+            @auth = Pathfinder::OAuth.new
+            @token = auth.load_token
+
+            if @token.nil?
+                raise 'No OAuth credentials stored'
+            end
+
+            @session = GoogleDrive.login_with_oauth(@token)
+            return Pathfinder::CharacterSheet.new(@session, @key)
+        end
+    end
+
 
 end
 
