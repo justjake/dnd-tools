@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 module Pathfinder
 
     # This is where all the in-game functions are defined, like rolling dice.

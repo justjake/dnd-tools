@@ -1,5 +1,5 @@
 # D&D functions
-require "pathfinder/tools"
+require "pathfinder_dnd/tools"
 
 module Pathfinder
     # The whole of the Pathfinder Spreadsheet-tools environment.

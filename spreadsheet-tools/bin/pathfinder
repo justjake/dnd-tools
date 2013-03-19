@@ -3,7 +3,7 @@
 # Run skill checks against the stats from your Google Drive character
 # sheet.
 
-require "pathfinder"
+require "pathfinder_dnd"
 require "pry"       # my fav console evar
 
 # OAuth flow

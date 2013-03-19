@@ -4,8 +4,8 @@ require "pstore"
 
 require "google_drive"
 
-require "pathfinder/oauth"
-require "pathfinder/character_sheet"
+require "pathfinder_dnd/oauth"
+require "pathfinder_dnd/character_sheet"
 
 module Pathfinder
 
