@@ -1,2 +1,4 @@
 # Don't save databases
 *.pstore
+# Don't save built gems
+*.gem

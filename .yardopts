@@ -1,0 +1,4 @@
+spreadsheet-tools/lib/**/*.rb
+spreadsheet-tools/bin/*
+README.md
+LICENSE.txt
