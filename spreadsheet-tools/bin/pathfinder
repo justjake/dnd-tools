@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+# Run skill checks against the stats from your Google Drive character
+# sheet.
+
+require "pathfinder"
+require "pry"       # my fav console evar
+
+# OAuth flow
+state = Pathfinder::StateManager.new
+
+# Set up the env...
+character = nil
+while character.nil?
+    begin
+        character = state.get_character_sheet
+    rescue GoogleDrive::AuthenticationError => error
+        puts "There was an error authenticating with Google Drive:\n"
+        puts error.to_s
+        puts "\n\nRe-linking with Google Drive..."
+        state.authorize
+    end
+end
+
+# Boom, UI.
+Pry.config.prompt = [ proc { 'd&d>> ' }, proc { '  |  ' } ]
+
+class Fixnum
+    # Calculate the ability modifier from an integer
+    # @example strength.modifier
+    def modifier
+        ((self - 10) / 2).to_i
+    end
+end
+
+# all skills & most stats included
+puts '--- Pathfinder Character Tools 2: Revenge of Google Docs ---
+ version 0.2 "Beware of OAuth"
+
+    You are in a fully-interactive ruby console. 
+    You can `ls` to see methods.
+
+    Roll basic skill checks and saving throws by typing `check <bonus>`
+    You can roll a 20-sided dice using `check` without a bonus.
+    Roll dice with `roll <count>, <sides>`
+    Tab completion is enabled.
+
+    type `help` for an overview of console usage
+    type `show-doc <method>` to view help for that specific method
+
+'
+    
+character.pry

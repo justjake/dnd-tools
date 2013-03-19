@@ -1,15 +1,10 @@
-require "rubygems"
-require "bundler/setup"
-
 require "oauth2"
-require "pstore" # used over YAML for novelty.
-
 
 module Pathfinder
+    # Abstracts over the process to OAuth a command-line client with Google.
+    # Saves the user's OAuth refresh token in whatever transactional Pstore-like
+    # bucket you provide.
     class OAuth
-
-        STORE = File.join(File.dirname(__FILE__), 'oauth.pstore')
-
         # TODO: move into ENV
         #CLIENT_ID = ENV['CLIENT_ID']
         #CLIENT_SECRET = ENV['CLIENT_SECRET']
@@ -29,17 +24,18 @@ module Pathfinder
 
         attr_reader :access_token
 
-        # Pass in a PSTORE or one will be created for you
-        def initialize(storage = nil)
+        # Pass in a PSTORE to use for refresh_token storage
+        def initialize(storage)
             @client = OAuth2::Client.new(CLIENT_ID, CLIENT_SECRET, {
                 :site => 'https://accounts.google.com',
                 :authorize_url => '/o/oauth2/auth',
                 :token_url => '/o/oauth2/token'
             })
 
-            @storage = storage || PStore.new(STORE)
+            @storage = storage
         end
 
+        # Round-trip the user throught the Google OAuth process
         def authorize()
             # Step 1
             puts "\n\nOpen this URL into your browser to connect this app with Google: "
@@ -62,6 +58,7 @@ module Pathfinder
             })
         end
 
+        # write the refresh token to storage for future use
         def save_token()
             if @access_token.nil?
                 raise 'No access token to store'
@@ -74,6 +71,7 @@ module Pathfinder
 
         end
 
+        # create a new session token from whatever refresh token is in the storage.
         def load_token()
             token = nil
             refresh = nil
