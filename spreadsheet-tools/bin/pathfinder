@@ -34,8 +34,8 @@ class Fixnum
 end
 
 # all skills & most stats included
-puts '--- Pathfinder Character Tools 2: Revenge of Google Docs ---
- version 0.1.2 "Gold and Gems"
+puts %Q[--- Pathfinder Character Tools 2: Revenge of Google Docs ---
+ version #{Pathfinder::VERSION}
 
     You are in a fully-interactive ruby console. 
     You can `ls` to see methods.
@@ -47,7 +47,7 @@ puts '--- Pathfinder Character Tools 2: Revenge of Google Docs ---
 
     type `help` for an overview of console usage
     type `show-doc <method>` to view help for that specific method
+]
 
-'
     
 character.pry
