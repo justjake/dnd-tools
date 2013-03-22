@@ -17,6 +17,11 @@ module Pathfinder
 
         # include standard D&D tools
         include Pathfinder::Tools
+
+        # Include user RC if possible
+        if load '~/.config/pathfinder/rc.rb'
+            include Pathfinder::RC
+        end
         
         # What sheet title to pull stats from?
         STATS_SHEET = 'Stats, Skills, Weapons'
